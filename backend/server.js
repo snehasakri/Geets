@@ -12,10 +12,11 @@ app.use(express.json());
 
 // ✅ MySQL connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Sneha@123",
-  database: "beauty_parlor",
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT,
 });
 
 // ✅ Connect DB
@@ -106,6 +107,8 @@ app.get("/", (req, res) => {
 });
 
 // ✅ START SERVER
-app.listen(5000, "0.0.0.0", () => {
-  console.log("🚀 Server running on http://localhost:5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
