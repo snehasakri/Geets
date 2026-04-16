@@ -7,7 +7,7 @@ const cors = require("cors");
 const app = express();
 
 // ✅ Middleware
-const cors = require("cors");
+
 
 app.use(cors({
   origin: "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
