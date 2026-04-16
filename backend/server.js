@@ -1,4 +1,4 @@
-// backend/server.js
+/// backend/server.js
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -6,8 +6,7 @@ const cors = require("cors");
 
 const app = express();
 
-// ✅ CORS middleware
-
+// ✅ Allowed origins
 const allowedOrigins = [
   "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
   "http://localhost:5173",
@@ -16,19 +15,22 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
 ];
 
+// ✅ CORS middleware (fixed)
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    callback(new Error("CORS policy: origin not allowed"));
+    return callback(new Error("CORS policy: origin not allowed"));
   },
-  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  optionsSuccessStatus: 204,
 }));
-app.options("*", cors());
+
+// ❌ REMOVED this line (IMPORTANT)
+// app.options("*", cors());
+
 app.use(express.json());
 
 // ✅ MySQL connection
@@ -49,7 +51,7 @@ db.connect((err) => {
   }
 });
 
-// ✅ ADD BOOKING (NO CHANGE)
+// ✅ ADD BOOKING
 app.post("/add-booking", (req, res) => {
   console.log("📩 Incoming:", req.body);
 
@@ -77,7 +79,7 @@ app.post("/add-booking", (req, res) => {
   });
 });
 
-// ✅ 🔥 FIXED GET BOOKINGS (MAIN FIX)
+// ✅ GET BOOKINGS
 app.get("/bookings", (req, res) => {
   const sql = `
     SELECT 

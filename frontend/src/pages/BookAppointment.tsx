@@ -26,43 +26,43 @@ import Layout from "@/components/Layout";
 
 const services = {
   "💇 Hair Services": [
-    "Hair Wash","Any Hair Cut","Hair Setting","Hair Spa (Normal)",
-    "Hair Spa (With Ampoule)","Hair Spa (Anti-Dandruff)","Hair Colour",
-    "Ironing","Tong","Crimping","Hair Style",
+    "Hair Wash", "Any Hair Cut", "Hair Setting", "Hair Spa (Normal)",
+    "Hair Spa (With Ampoule)", "Hair Spa (Anti-Dandruff)", "Hair Colour",
+    "Ironing", "Tong", "Crimping", "Hair Style",
   ],
   "💆 Facial & Clean-Up": [
-    "Fruits Facial","VLCC Facial","Rich Feel Facial","Wine Facial",
-    "Lotus Facial","Cheryl’s Facial","O3 Facial",
-    "Fruits Clean Up","VLCC Clean Up","Rich Feel Clean Up",
-    "Wine Clean Up","Lotus Clean Up","Cheryl’s Clean Up","O3 Clean Up",
+    "Fruits Facial", "VLCC Facial", "Rich Feel Facial", "Wine Facial",
+    "Lotus Facial", "Cheryl’s Facial", "O3 Facial",
+    "Fruits Clean Up", "VLCC Clean Up", "Rich Feel Clean Up",
+    "Wine Clean Up", "Lotus Clean Up", "Cheryl’s Clean Up", "O3 Clean Up",
   ],
   "✨ D-Tan & Bleach": [
-    "Face D-Tan","Neck D-Tan","1/2 Leg D-Tan","1/2 Hand D-Tan",
-    "Only Foot D-Tan","Underarms D-Tan","Back D-Tan",
-    "Face Bleach","Neck Bleach","1/2 Leg Bleach",
-    "Full Hand Bleach","Only Foot Bleach",
+    "Face D-Tan", "Neck D-Tan", "1/2 Leg D-Tan", "1/2 Hand D-Tan",
+    "Only Foot D-Tan", "Underarms D-Tan", "Back D-Tan",
+    "Face Bleach", "Neck Bleach", "1/2 Leg Bleach",
+    "Full Hand Bleach", "Only Foot Bleach",
   ],
   "🧖 Waxing": [
-    "Full Hand Wax","1/2 Leg Wax","B Wax",
+    "Full Hand Wax", "1/2 Leg Wax", "B Wax",
   ],
   "💅 Manicure & Pedicure": [
-    "Basic Manicure","Spa Manicure","Manicure",
-    "Basic Pedicure","Spa Pedicure","Pedicure",
+    "Basic Manicure", "Spa Manicure", "Manicure",
+    "Basic Pedicure", "Spa Pedicure", "Pedicure",
   ],
   "💆 Massage & Body": [
-    "Foot Massage","1/2 Leg Massage","Full Hand Massage",
-    "Back Massage","Head Massage","Body Massage","Body Polish",
+    "Foot Massage", "1/2 Leg Massage", "Full Hand Massage",
+    "Back Massage", "Head Massage", "Body Massage", "Body Polish",
   ],
   "💄 Makeup & Styling": [
-    "Bridal Makeup (HD)","Bridal Makeup (Airbrush)",
-    "Party Makeup","Makeup (Basic)","Saree Draping",
+    "Bridal Makeup (HD)", "Bridal Makeup (Airbrush)",
+    "Party Makeup", "Makeup (Basic)", "Saree Draping",
   ],
 };
 
 const timeSlots = [
-  "10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM",
-  "01:00 PM","01:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM",
-  "04:00 PM","04:30 PM","05:00 PM","05:30 PM","06:00 PM","06:30 PM","07:00 PM",
+  "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
+  "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+  "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM",
 ];
 
 // ✅ convert time to MySQL format
@@ -112,10 +112,7 @@ const BookAppointment = () => {
     setIsSubmitting(true);
 
     try {
-      const localDate = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
+      const localDate = date.toLocaleDateString("en-CA");
       const res = await fetch(`${API}/add-booking`, {
         method: "POST",
         headers: {
@@ -126,7 +123,7 @@ const BookAppointment = () => {
           phone,
           email,
           service,
-          date: localDate,
+          date: date.toLocaleDateString("en-CA"), // ✅ FIXED
           time: convertTime(time),
         }),
       });
