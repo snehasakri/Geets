@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"; // ✅ added useEffect
 import { useNavigate } from "react-router-dom"; // ✅ added
+const API = import.meta.env.VITE_API_URL;
 import { format } from "date-fns";
 import {
   CalendarIcon,
@@ -162,7 +163,9 @@ const BookAppointment = () => {
         date.getMonth() + 1
       ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-      const res = await fetch("http://127.0.0.1:5000/add-booking", {
+      const API = import.meta.env.VITE_API_URL;
+
+      const res = await fetch(`${API}/add-booking`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

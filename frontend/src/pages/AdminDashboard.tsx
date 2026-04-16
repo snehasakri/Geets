@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+const API = import.meta.env.VITE_API_URL;
 type User = {
   role: "admin" | "user";
 };
@@ -43,8 +43,10 @@ export default function AdminDashboard() {
       return;
     }
 
+    const API = import.meta.env.VITE_API_URL;
+
     const fetchBookings = () => {
-      fetch("http://127.0.0.1:5000/bookings")
+      fetch(`${API}/bookings`)
         .then((res) => res.json())
         .then((data) => {
           const today = getToday();
@@ -114,13 +116,13 @@ export default function AdminDashboard() {
   const groupedBookings: { [key: string]: Booking[] } = {};
 
   bookings.forEach((b) => {
-  if (b.date === today) return; // ✅ remove today's duplication
+    if (b.date === today) return; // ✅ remove today's duplication
 
-  if (!groupedBookings[b.date]) {
-    groupedBookings[b.date] = [];
-  }
-  groupedBookings[b.date].push(b);
-});
+    if (!groupedBookings[b.date]) {
+      groupedBookings[b.date] = [];
+    }
+    groupedBookings[b.date].push(b);
+  });
 
   return (
     <div style={styles.page}>
