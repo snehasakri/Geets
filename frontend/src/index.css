@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 15%;
+
+    /* Rose pink primary */
+    --primary: 340 82% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light blush secondary */
+    --secondary: 340 30% 96%;
+    --secondary-foreground: 340 40% 30%;
+
+    /* Soft grey muted */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Rose accent */
+    --accent: 340 50% 90%;
+    --accent-foreground: 340 60% 35%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 340 20% 90%;
+    --input: 340 20% 90%;
+    --ring: 340 82% 52%;
+
+    --radius: 1rem;
+
+    /* Custom salon colors */
+    --rose: 340 82% 52%;
+    --rose-light: 340 60% 95%;
+    --rose-dark: 340 70% 40%;
+    --blush: 340 30% 96%;
+    --cream: 30 40% 98%;
+    --gold: 35 80% 55%;
+    --charcoal: 0 0% 20%;
+
+    /* Gradients */
+    --gradient-rose: linear-gradient(135deg, hsl(340 82% 52%) 0%, hsl(350 75% 60%) 100%);
+    --gradient-blush: linear-gradient(135deg, hsl(340 60% 95%) 0%, hsl(340 30% 96%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(340 30% 96%) 0%, hsl(0 0% 100%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-rose);
+  }
+
+  .btn-rose {
+    @apply bg-primary text-primary-foreground hover:bg-rose-dark transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24 px-4 md:px-8;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto;
+  }
+}
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+}
