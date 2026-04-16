@@ -7,7 +7,13 @@ const cors = require("cors");
 const app = express();
 
 // ✅ Middleware
-app.use(cors());
+const cors = require("cors");
+
+app.use(cors({
+  origin: "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
+  methods: ["GET", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
 app.use(express.json());
 
 // ✅ MySQL connection
