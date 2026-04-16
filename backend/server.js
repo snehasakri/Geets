@@ -6,14 +6,29 @@ const cors = require("cors");
 
 const app = express();
 
-// ✅ Middleware
+// ✅ CORS middleware
 
+const allowedOrigins = [
+  "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
 app.use(cors({
-  origin: "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
-  methods: ["GET", "POST", "DELETE"],
-  allowedHeaders: ["Content-Type"]
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error("CORS policy: origin not allowed"));
+  },
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 204,
 }));
+app.options("*", cors());
 app.use(express.json());
 
 // ✅ MySQL connection
