@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL;
 
 import { format } from "date-fns";
-import {
-  CheckCircle,
-} from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +24,48 @@ import {
 
 import Layout from "@/components/Layout";
 
+const services = {
+  "💇 Hair Services": [
+    "Hair Wash","Any Hair Cut","Hair Setting","Hair Spa (Normal)",
+    "Hair Spa (With Ampoule)","Hair Spa (Anti-Dandruff)","Hair Colour",
+    "Ironing","Tong","Crimping","Hair Style",
+  ],
+  "💆 Facial & Clean-Up": [
+    "Fruits Facial","VLCC Facial","Rich Feel Facial","Wine Facial",
+    "Lotus Facial","Cheryl’s Facial","O3 Facial",
+    "Fruits Clean Up","VLCC Clean Up","Rich Feel Clean Up",
+    "Wine Clean Up","Lotus Clean Up","Cheryl’s Clean Up","O3 Clean Up",
+  ],
+  "✨ D-Tan & Bleach": [
+    "Face D-Tan","Neck D-Tan","1/2 Leg D-Tan","1/2 Hand D-Tan",
+    "Only Foot D-Tan","Underarms D-Tan","Back D-Tan",
+    "Face Bleach","Neck Bleach","1/2 Leg Bleach",
+    "Full Hand Bleach","Only Foot Bleach",
+  ],
+  "🧖 Waxing": [
+    "Full Hand Wax","1/2 Leg Wax","B Wax",
+  ],
+  "💅 Manicure & Pedicure": [
+    "Basic Manicure","Spa Manicure","Manicure",
+    "Basic Pedicure","Spa Pedicure","Pedicure",
+  ],
+  "💆 Massage & Body": [
+    "Foot Massage","1/2 Leg Massage","Full Hand Massage",
+    "Back Massage","Head Massage","Body Massage","Body Polish",
+  ],
+  "💄 Makeup & Styling": [
+    "Bridal Makeup (HD)","Bridal Makeup (Airbrush)",
+    "Party Makeup","Makeup (Basic)","Saree Draping",
+  ],
+};
+
 const timeSlots = [
   "10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM",
   "01:00 PM","01:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM",
   "04:00 PM","04:30 PM","05:00 PM","05:30 PM","06:00 PM","06:30 PM","07:00 PM",
 ];
 
-// ✅ FIX: convert time to MySQL format
+// ✅ convert time to MySQL format
 const convertTime = (time: string) => {
   const [hm, period] = time.split(" ");
   let [h, m] = hm.split(":");
@@ -56,7 +89,6 @@ const BookAppointment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
 
-  // 🔐 login protection
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (!user) navigate("/login");
@@ -80,7 +112,6 @@ const BookAppointment = () => {
     setIsSubmitting(true);
 
     try {
-      // ✅ FIX: proper date format
       const localDate = `${date.getFullYear()}-${String(
         date.getMonth() + 1
       ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -96,14 +127,13 @@ const BookAppointment = () => {
           email,
           service,
           date: localDate,
-          time: convertTime(time), // ✅ FIXED
+          time: convertTime(time),
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        console.error(data);
         throw new Error(data.error || "Server error");
       }
 
@@ -114,14 +144,14 @@ const BookAppointment = () => {
       }
 
     } catch (err) {
-      console.error("❌ Error:", err);
+      console.error(err);
       alert("Server error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ✅ SUCCESS SCREEN
+  // ✅ success UI
   if (isBooked) {
     return (
       <Layout>
@@ -145,29 +175,30 @@ const BookAppointment = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          <Input
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-          <Input
-            placeholder="Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-
-          <Input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <Input
-            placeholder="Service"
-            value={service}
-            onChange={(e) => setService(e.target.value)}
-          />
+          {/* ✅ SERVICE DROPDOWN */}
+          <Select onValueChange={setService}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Service" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(services).map(([category, items]) => (
+                <div key={category}>
+                  <div className="px-2 py-1 text-sm font-semibold text-gray-500">
+                    {category}
+                  </div>
+                  {items.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </div>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Popover>
             <PopoverTrigger asChild>
@@ -193,11 +224,7 @@ const BookAppointment = () => {
             </SelectContent>
           </Select>
 
-          <Textarea
-            placeholder="Notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          <Textarea placeholder="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? "Booking..." : "Book Appointment"}
