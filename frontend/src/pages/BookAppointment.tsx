@@ -1,17 +1,12 @@
-import { useState, useEffect } from "react"; // ✅ added useEffect
-import { useNavigate } from "react-router-dom"; // ✅ added
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL;
+
 import { format } from "date-fns";
 import {
-  CalendarIcon,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  Sparkles,
   CheckCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,98 +23,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+
 import Layout from "@/components/Layout";
 
-const services = {
-  "💇 Hair Services": [
-    "Hair Wash",
-    "Any Hair Cut",
-    "Hair Setting",
-    "Hair Spa (Normal)",
-    "Hair Spa (With Ampoule)",
-    "Hair Spa (Anti-Dandruff)",
-    "Hair Colour",
-    "Ironing",
-    "Tong",
-    "Crimping",
-    "Hair Style",
-  ],
-
-  "💆 Facial & Clean-Up": [
-    "Fruits Facial",
-    "VLCC Facial",
-    "Rich Feel Facial",
-    "Wine Facial",
-    "Lotus Facial",
-    "Cheryl’s Facial",
-    "O3 Facial",
-    "Fruits Clean Up",
-    "VLCC Clean Up",
-    "Rich Feel Clean Up",
-    "Wine Clean Up",
-    "Lotus Clean Up",
-    "Cheryl’s Clean Up",
-    "O3 Clean Up",
-  ],
-
-  "✨ D-Tan & Bleach": [
-    "Face D-Tan",
-    "Neck D-Tan",
-    "1/2 Leg D-Tan",
-    "1/2 Hand D-Tan",
-    "Only Foot D-Tan",
-    "Underarms D-Tan",
-    "Back D-Tan",
-    "Face Bleach",
-    "Neck Bleach",
-    "1/2 Leg Bleach",
-    "Full Hand Bleach",
-    "Only Foot Bleach",
-  ],
-
-  "🧖 Waxing": [
-    "Full Hand Wax",
-    "1/2 Leg Wax",
-    "B Wax",
-  ],
-
-  "💅 Manicure & Pedicure": [
-    "Basic Manicure",
-    "Spa Manicure",
-    "Manicure",
-    "Basic Pedicure",
-    "Spa Pedicure",
-    "Pedicure",
-  ],
-
-  "💆 Massage & Body": [
-    "Foot Massage",
-    "1/2 Leg Massage",
-    "Full Hand Massage",
-    "Back Massage",
-    "Head Massage",
-    "Body Massage",
-    "Body Polish",
-  ],
-
-  "💄 Makeup & Styling": [
-    "Bridal Makeup (HD)",
-    "Bridal Makeup (Airbrush)",
-    "Party Makeup",
-    "Makeup (Basic)",
-    "Saree Draping",
-  ],
-};
-
 const timeSlots = [
-  "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
-  "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
-  "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM",
+  "10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM",
+  "01:00 PM","01:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM",
+  "04:00 PM","04:30 PM","05:00 PM","05:30 PM","06:00 PM","06:30 PM","07:00 PM",
 ];
 
+// ✅ FIX: convert time to MySQL format
+const convertTime = (time: string) => {
+  const [hm, period] = time.split(" ");
+  let [h, m] = hm.split(":");
+
+  if (period === "PM" && h !== "12") h = String(+h + 12);
+  if (period === "AM" && h === "12") h = "00";
+
+  return `${h.padStart(2, "0")}:${m}:00`;
+};
+
 const BookAppointment = () => {
-  const navigate = useNavigate(); // ✅ added
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -131,21 +56,18 @@ const BookAppointment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
 
-  // ✅ OPTIONAL: redirect if not logged in (page-level protection)
+  // 🔐 login protection
   useEffect(() => {
     const user = localStorage.getItem("user");
-    if (!user) {
-      navigate("/login");
-    }
+    if (!user) navigate("/login");
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ LOGIN CHECK (IMPORTANT)
     const user = localStorage.getItem("user");
     if (!user) {
-      alert("Please login first to book appointment");
+      alert("Please login first");
       navigate("/login");
       return;
     }
@@ -158,12 +80,10 @@ const BookAppointment = () => {
     setIsSubmitting(true);
 
     try {
-      // ✅ FIX: convert to LOCAL DATE (NO UTC SHIFT)
+      // ✅ FIX: proper date format
       const localDate = `${date.getFullYear()}-${String(
         date.getMonth() + 1
       ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-      
 
       const res = await fetch(`${API}/add-booking`, {
         method: "POST",
@@ -176,29 +96,32 @@ const BookAppointment = () => {
           email,
           service,
           date: localDate,
-          time,
+          time: convertTime(time), // ✅ FIXED
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Server error");
-      }
-
       const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        throw new Error(data.error || "Server error");
+      }
 
       if (data.success) {
         setIsBooked(true);
       } else {
         alert("Booking failed");
       }
+
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error:", err);
       alert("Server error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ✅ SUCCESS SCREEN
   if (isBooked) {
     return (
       <Layout>
@@ -221,6 +144,7 @@ const BookAppointment = () => {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
           <Input
             placeholder="Full Name"
             value={name}
@@ -239,26 +163,11 @@ const BookAppointment = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Select onValueChange={setService}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Service" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(services).map(([category, items]) => (
-                <div key={category}>
-                  <div className="px-2 py-1 text-sm font-semibold text-gray-500">
-                    {category}
-                  </div>
-
-                  {items.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </div>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            placeholder="Service"
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+          />
 
           <Popover>
             <PopoverTrigger asChild>
@@ -293,6 +202,7 @@ const BookAppointment = () => {
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? "Booking..." : "Book Appointment"}
           </Button>
+
         </form>
       </div>
     </Layout>
