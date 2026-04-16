@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       return;
     }
 
-    const API = import.meta.env.VITE_API_URL;
+    
 
     const fetchBookings = () => {
       fetch(`${API}/bookings`)
@@ -86,14 +86,14 @@ export default function AdminDashboard() {
     navigate("/login");
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:5000/delete-booking/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+const handleDelete = async (id) => {
+  try {
+    const res = await fetch(
+      `${API}/delete-booking/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
 
       const data = await res.json();
 

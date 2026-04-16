@@ -163,7 +163,7 @@ const BookAppointment = () => {
         date.getMonth() + 1
       ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-      const API = import.meta.env.VITE_API_URL;
+      
 
       const res = await fetch(`${API}/add-booking`, {
         method: "POST",
