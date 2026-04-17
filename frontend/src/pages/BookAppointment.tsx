@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 import { format } from "date-fns";
@@ -65,7 +66,7 @@ const timeSlots = [
   "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM", "07:00 PM",
 ];
 
-// ✅ convert time to MySQL format
+// ✅ Convert to MySQL TIME format
 const convertTime = (time: string) => {
   const [hm, period] = time.split(" ");
   let [h, m] = hm.split(":");
@@ -97,13 +98,6 @@ const BookAppointment = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const user = localStorage.getItem("user");
-    if (!user) {
-      alert("Please login first");
-      navigate("/login");
-      return;
-    }
-
     if (!name || !phone || !service || !date || !time) {
       alert("Please fill all fields");
       return;
@@ -112,8 +106,10 @@ const BookAppointment = () => {
     setIsSubmitting(true);
 
     try {
-      const localDate = date.toISOString().split("T")[0];
-      const res = await fetch("https://geets-backend.onrender.com/add-booking", {
+      // ✅ FIXED DATE (NO TIMEZONE ISSUE)
+      const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+      const res = await fetch(`${API}/add-booking`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,22 +119,16 @@ const BookAppointment = () => {
           phone,
           email,
           service,
-          date: localDate,              // ✅ correct
+          date: localDate,
           time: convertTime(time),
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Server error");
-      }
+      if (!res.ok) throw new Error(data.error || "Server error");
 
-      if (data.success) {
-        setIsBooked(true);
-      } else {
-        alert("Booking failed");
-      }
+      setIsBooked(true);
 
     } catch (err) {
       console.error(err);
@@ -148,7 +138,7 @@ const BookAppointment = () => {
     }
   };
 
-  // ✅ success UI
+  // ✅ SUCCESS UI
   if (isBooked) {
     return (
       <Layout>
@@ -176,7 +166,7 @@ const BookAppointment = () => {
           <Input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-          {/* ✅ SERVICE DROPDOWN */}
+          {/* SERVICE */}
           <Select onValueChange={setService}>
             <SelectTrigger>
               <SelectValue placeholder="Select Service" />
@@ -197,6 +187,7 @@ const BookAppointment = () => {
             </SelectContent>
           </Select>
 
+          {/* DATE */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline">
@@ -208,6 +199,7 @@ const BookAppointment = () => {
             </PopoverContent>
           </Popover>
 
+          {/* TIME */}
           <Select onValueChange={setTime}>
             <SelectTrigger>
               <SelectValue placeholder="Select Time" />

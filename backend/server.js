@@ -5,12 +5,12 @@ const mysql = require("mysql2");
 const app = express();
 
 // ===============================
-// ✅ CORS CONFIG (FINAL FIX)
+// ✅ CORS CONFIG (FINAL CLEAN FIX)
 // ===============================
 const allowedOrigins = [
-  "https://geets-ovh25eol0-snehasakris-projects.vercel.app", // ✅ updated
-  "http://localhost:8080",
-  "http://localhost:3000"
+  "https://geets-1acn34drw-snehasakris-projects.vercel.app", // ✅ CURRENT frontend
+  "http://localhost:3000",
+  "http://localhost:8080"
 ];
 
 app.use(cors({
@@ -20,27 +20,13 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      console.log("❌ Blocked:", origin);
+      callback(null, false); // ✅ DO NOT throw error
     }
   },
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
-
-// ===============================
-// ✅ HANDLE PREFLIGHT (IMPORTANT FIX)
-// ===============================
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200); // ✅ THIS FIXES YOUR 500 ERROR
-  }
-
-  next();
-});
 
 // ===============================
 // ✅ MIDDLEWARE
@@ -48,136 +34,68 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // ===============================
-// ✅ MYSQL CONNECTION (POOL)
+// ✅ MYSQL CONNECTION
 // ===============================
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT || 3306,
+  port: process.env.MYSQLPORT,
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: 10
 });
 
-// Test DB
-db.getConnection((err, connection) => {
+db.getConnection((err, conn) => {
   if (err) {
-    console.log("❌ DB Connection Error:", err);
+    console.log("❌ DB Error:", err);
   } else {
     console.log("✅ MySQL Connected");
-    connection.release();
+    conn.release();
   }
 });
 
 // ===============================
-// ✅ TEST ROUTE
+// ✅ ROUTES
 // ===============================
 app.get("/", (req, res) => {
-  res.send("Server is running ✅");
+  res.send("Server running ✅");
 });
 
-// ===============================
-// ✅ ADD BOOKING
-// ===============================
 app.post("/add-booking", (req, res) => {
-  console.log("📩 Incoming:", req.body);
-
   const { name, phone, email, service, date, time } = req.body;
 
   if (!name || !phone || !service || !date || !time) {
-    return res.status(400).json({ error: "Missing required fields" });
+    return res.status(400).json({ error: "Missing fields" });
   }
 
   const sql =
     "INSERT INTO bookings (name, phone, email, service, date, time) VALUES (?, ?, ?, ?, ?, ?)";
 
-  db.query(sql, [name, phone, email, service, date, time], (err, result) => {
+  db.query(sql, [name, phone, email, service, date, time], (err) => {
     if (err) {
       console.log("❌ Insert Error:", err);
-      return res.status(500).json({
-        error: "Database error",
-        details: err.message
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Booking successful"
-    });
-  });
-});
-
-// ===============================
-// ✅ GET BOOKINGS
-// ===============================
-app.get("/bookings", (req, res) => {
-  const sql = `
-    SELECT 
-      id, 
-      name, 
-      email, 
-      phone, 
-      service, 
-      DATE_FORMAT(date, '%Y-%m-%d') AS date, 
-      time 
-    FROM bookings 
-    ORDER BY id DESC
-  `;
-
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.log("❌ Fetch Error:", err);
-      return res.status(500).json({
-        error: "Error fetching data"
-      });
-    }
-
-    res.status(200).json(result);
-  });
-});
-
-// ===============================
-// ✅ DELETE BOOKING
-// ===============================
-app.delete("/delete-booking/:id", (req, res) => {
-  const id = req.params.id;
-
-  const sql = "DELETE FROM bookings WHERE id = ?";
-
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.log("❌ Delete Error:", err);
-      return res.status(500).json({ success: false });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Not found"
-      });
+      return res.status(500).json({ error: err.message });
     }
 
     res.json({ success: true });
   });
 });
 
-// ===============================
-// ✅ GLOBAL ERROR HANDLER
-// ===============================
-app.use((err, req, res, next) => {
-  console.error("🔥 Server Error:", err.message);
-  res.status(500).json({
-    error: err.message || "Internal Server Error"
+app.get("/bookings", (req, res) => {
+  db.query("SELECT * FROM bookings ORDER BY id DESC", (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+});
+
+app.delete("/delete-booking/:id", (req, res) => {
+  db.query("DELETE FROM bookings WHERE id=?", [req.params.id], (err) => {
+    if (err) return res.status(500).json({ success: false });
+    res.json({ success: true });
   });
 });
 
 // ===============================
-// ✅ START SERVER
-// ===============================
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log("🚀 Server running on", PORT));
