@@ -113,7 +113,7 @@ const BookAppointment = () => {
 
     try {
       const localDate = date.toLocaleDateString("en-CA");
-      const res = await fetch(`${API}/add-booking`, {
+      const res = await fetch("https://geets-backend.onrender.com/add-booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +123,7 @@ const BookAppointment = () => {
           phone,
           email,
           service,
-          date: date.toLocaleDateString("en-CA"), // ✅ FIXED
+          date: localDate,              // ✅ correct
           time: convertTime(time),
         }),
       });

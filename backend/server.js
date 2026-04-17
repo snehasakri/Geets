@@ -5,7 +5,7 @@ const mysql = require("mysql2");
 const app = express();
 
 // ===============================
-// ✅ CORS CONFIG (FIXED)
+// ✅ CORS CONFIG (ROBUST)
 // ===============================
 const allowedOrigins = [
   "https://geets-dll2sky39-snehasakris-projects.vercel.app",
@@ -13,14 +13,21 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
-// ❌ REMOVED THIS LINE (CAUSES RENDER CRASH)
-// app.options("*", cors());
+// ✅ Handle preflight properly (SAFE)
+app.options("*", cors());
 
 // ===============================
 // ✅ MIDDLEWARE
@@ -28,23 +35,26 @@ app.use(cors({
 app.use(express.json());
 
 // ===============================
-// ✅ MYSQL CONNECTION
+// ✅ MYSQL CONNECTION (POOL - FIX)
 // ===============================
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT,
-
+  port: process.env.MYSQLPORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Connect DB
-db.connect((err) => {
+// Test DB connection
+db.getConnection((err, connection) => {
   if (err) {
-    console.log("❌ DB Error:", err);
+    console.log("❌ DB Connection Error:", err);
   } else {
     console.log("✅ MySQL Connected");
+    connection.release();
   }
 });
 
@@ -64,7 +74,7 @@ app.post("/add-booking", (req, res) => {
   const { name, phone, email, service, date, time } = req.body;
 
   if (!name || !phone || !service || !date || !time) {
-    return res.status(400).json({ error: "Missing fields" });
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   const sql =
@@ -73,12 +83,15 @@ app.post("/add-booking", (req, res) => {
   db.query(sql, [name, phone, email, service, date, time], (err, result) => {
     if (err) {
       console.log("❌ Insert Error:", err);
-      return res.status(500).json({ error: "Database error" });
+      return res.status(500).json({
+        error: "Database error",
+        details: err.message
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: "Booking successful",
+      message: "Booking successful"
     });
   });
 });
@@ -103,7 +116,9 @@ app.get("/bookings", (req, res) => {
   db.query(sql, (err, result) => {
     if (err) {
       console.log("❌ Fetch Error:", err);
-      return res.status(500).json({ error: "Error fetching data" });
+      return res.status(500).json({
+        error: "Error fetching data"
+      });
     }
 
     res.status(200).json(result);
@@ -132,6 +147,16 @@ app.delete("/delete-booking/:id", (req, res) => {
     }
 
     res.json({ success: true });
+  });
+});
+
+// ===============================
+// ✅ GLOBAL ERROR HANDLER (IMPORTANT)
+// ===============================
+app.use((err, req, res, next) => {
+  console.error("🔥 Server Error:", err.message);
+  res.status(500).json({
+    error: err.message || "Internal Server Error"
   });
 });
 
