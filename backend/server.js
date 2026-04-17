@@ -25,8 +25,8 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ✅ Handle preflight requests
-app.options("*", cors());
+// ❌ REMOVED THIS LINE (CAUSES RENDER CRASH)
+// app.options("*", cors());
 
 // ===============================
 // ✅ MIDDLEWARE
