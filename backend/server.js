@@ -5,10 +5,11 @@ const mysql = require("mysql2");
 const app = express();
 
 // ===============================
-// ✅ CORS CONFIG (ROBUST)
+// ✅ CORS CONFIG (FINAL FIX)
 // ===============================
 const allowedOrigins = [
-  "https://geets-dll2sky39-snehasakris-projects.vercel.app",
+  "https://geets-ovh25eol0-snehasakris-projects.vercel.app", // ✅ updated
+  "http://localhost:8080",
   "http://localhost:3000"
 ];
 
@@ -26,8 +27,20 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ Handle preflight properly (SAFE)
+// ===============================
+// ✅ HANDLE PREFLIGHT (IMPORTANT FIX)
+// ===============================
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // ✅ THIS FIXES YOUR 500 ERROR
+  }
+
+  next();
+});
 
 // ===============================
 // ✅ MIDDLEWARE
@@ -35,7 +48,7 @@ app.use(cors({
 app.use(express.json());
 
 // ===============================
-// ✅ MYSQL CONNECTION (POOL - FIX)
+// ✅ MYSQL CONNECTION (POOL)
 // ===============================
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -48,7 +61,7 @@ const db = mysql.createPool({
   queueLimit: 0
 });
 
-// Test DB connection
+// Test DB
 db.getConnection((err, connection) => {
   if (err) {
     console.log("❌ DB Connection Error:", err);
@@ -151,7 +164,7 @@ app.delete("/delete-booking/:id", (req, res) => {
 });
 
 // ===============================
-// ✅ GLOBAL ERROR HANDLER (IMPORTANT)
+// ✅ GLOBAL ERROR HANDLER
 // ===============================
 app.use((err, req, res, next) => {
   console.error("🔥 Server Error:", err.message);

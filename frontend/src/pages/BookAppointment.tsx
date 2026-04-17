@@ -112,7 +112,7 @@ const BookAppointment = () => {
     setIsSubmitting(true);
 
     try {
-      const localDate = date.toLocaleDateString("en-CA");
+      const localDate = date.toISOString().split("T")[0];
       const res = await fetch("https://geets-backend.onrender.com/add-booking", {
         method: "POST",
         headers: {
