@@ -1,39 +1,41 @@
-/// backend/server.js
-
 const express = require("express");
-const mysql = require("mysql2");
 const cors = require("cors");
+const mysql = require("mysql2");
 
 const app = express();
 
-// ✅ Allowed origins
+// ===============================
+// ✅ CORS CONFIG (FIXED)
+// ===============================
 const allowedOrigins = [
-  "https://geets-r1ftnld0u-snehasakris-projects.vercel.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
+  "https://geets-dll2sky39-snehasakris-projects.vercel.app",
+  "http://localhost:3000"
 ];
 
-// ✅ CORS middleware (fixed)
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(null, false);
     }
-    return callback(new Error("CORS policy: origin not allowed"));
   },
-  methods: ["GET", "POST", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ❌ REMOVED this line (IMPORTANT)
-// app.options("*", cors());
+// ✅ Handle preflight requests
+app.options("*", cors());
 
+// ===============================
+// ✅ MIDDLEWARE
+// ===============================
 app.use(express.json());
 
-// ✅ MySQL connection
+// ===============================
+// ✅ MYSQL CONNECTION
+// ===============================
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -42,7 +44,7 @@ const db = mysql.createConnection({
   port: process.env.MYSQLPORT,
 });
 
-// ✅ Connect DB
+// Connect DB
 db.connect((err) => {
   if (err) {
     console.log("❌ DB Error:", err);
@@ -51,7 +53,16 @@ db.connect((err) => {
   }
 });
 
+// ===============================
+// ✅ TEST ROUTE
+// ===============================
+app.get("/", (req, res) => {
+  res.send("Server is running ✅");
+});
+
+// ===============================
 // ✅ ADD BOOKING
+// ===============================
 app.post("/add-booking", (req, res) => {
   console.log("📩 Incoming:", req.body);
 
@@ -70,8 +81,6 @@ app.post("/add-booking", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
 
-    console.log("✅ Booking inserted");
-
     res.status(200).json({
       success: true,
       message: "Booking successful",
@@ -79,7 +88,9 @@ app.post("/add-booking", (req, res) => {
   });
 });
 
+// ===============================
 // ✅ GET BOOKINGS
+// ===============================
 app.get("/bookings", (req, res) => {
   const sql = `
     SELECT 
@@ -104,7 +115,9 @@ app.get("/bookings", (req, res) => {
   });
 });
 
+// ===============================
 // ✅ DELETE BOOKING
+// ===============================
 app.delete("/delete-booking/:id", (req, res) => {
   const id = req.params.id;
 
@@ -112,24 +125,24 @@ app.delete("/delete-booking/:id", (req, res) => {
 
   db.query(sql, [id], (err, result) => {
     if (err) {
-      console.log("Delete Error:", err);
+      console.log("❌ Delete Error:", err);
       return res.status(500).json({ success: false });
     }
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Not found"
+      });
     }
 
     res.json({ success: true });
   });
 });
 
-// ✅ TEST ROUTE
-app.get("/", (req, res) => {
-  res.send("Server is running ✅");
-});
-
+// ===============================
 // ✅ START SERVER
+// ===============================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
