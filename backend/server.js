@@ -8,7 +8,7 @@ const app = express();
 // ✅ CORS CONFIG (FINAL FIX - ALLOW ALL)
 // ===============================
 app.use(cors({
-  origin: true,   // ✅ allows all frontend URLs (fixes Vercel issue)
+  origin: "https://geets-nine.vercel.app",   // ✅ allows all frontend URLs (fixes Vercel issue)
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
